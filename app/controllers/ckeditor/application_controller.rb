@@ -14,7 +14,9 @@ class Ckeditor::ApplicationController < ApplicationController
       callback = ckeditor_before_create_asset(asset)
 
       if callback && asset.save
-        if params[:CKEditor].blank?
+        if params[:CKEditor].blank? && params[:dnd] == "true"
+          render :json => { :uploaded => 1, :fileName => asset.filename, :url => Ckeditor::Utils.escape_single_quotes(asset.url_content) }
+        elsif params[:CKEditor].blank?
           render :json => asset.to_json(:only=>[:id, :type])
         else
           render :text => %Q"<script type='text/javascript'>
@@ -22,7 +24,9 @@ class Ckeditor::ApplicationController < ApplicationController
             </script>"
         end
       else
-        if params[:CKEditor].blank?
+        if params[:CKEditor].blank? && params[:dnd] == "true"
+          render :json => { :uploaded => 0, :error => asset.errors }
+        elsif params[:CKEditor].blank?
           render :nothing => true, :format => :json
         else
           render :text => %Q"<script type='text/javascript'>
